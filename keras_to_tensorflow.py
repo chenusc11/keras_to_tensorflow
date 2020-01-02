@@ -25,7 +25,7 @@ req_grp = parser.add_argument_group('required')
 req_grp.add_argument('--input_model',   default=False, type=str, help='Path to the input model.')
 req_grp.add_argument('--output_model',  default=False, type=str, help='Path where the converted model will.')
 
-args = parser.parser_args()
+args = parser.parse_args()
 pprint.pprint(vars(args))
 
 # input model path
@@ -33,10 +33,10 @@ model_path = args.input_model
 
 # If output_model path is relative and in cwd, make it absolute from root
 output_model = args.output_model
-if str(Path(output_model.parent)) == '.':
+if str(Path(output_model).parent) == '.':
     output_model = str((Path.cwd() / output_model))
 
-output_fld = Path(output_model.parent)
+output_fld = Path(output_model).parent
 output_model_name = Path(output_model).name
 
 K.set_learning_phase(0)
@@ -65,9 +65,9 @@ def freeze_session(session, keep_var_names=None, output_names=None, clear_device
     from tensorflow.python.framework.graph_util import convert_variables_to_constants
     graph = session.graph
     with graph.as_default():
-        freeze_var_names = list(set(v.op.name for v in tf.global_variables()).difference(keep_var_names or []))
+        freeze_var_names = list(set(v.op.name for v in tf.compat.v1.global_variables()).difference(keep_var_names or []))
         output_names = output_names or []
-        output_names += [v.op.name for v in tf.global_variables()]
+        output_names += [v.op.name for v in tf.compat.v1.global_variables()]
         # Graph -> GraphDef ProtoBuf
         input_graph_def = graph.as_graph_def()
         if clear_devices:
